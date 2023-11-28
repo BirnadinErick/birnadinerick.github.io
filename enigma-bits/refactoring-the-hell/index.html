@@ -1,0 +1,125 @@
+<!DOCTYPE html> <nav> <ul> <li><a href="/">Home</a></li> <li><a href="/enigma-bits">Enigma Bits</a></li> </ul> </nav> <main> <h1>Day 28 &amp; 29: Refactoring the Hell</h1> <p>TLDR;
+I made so many code smells due to time constraints, in this article I go over how I refactored/santify the repo for further development. I highlight few areas and my approach. If you find better approach, comment your voice 👍.
+Short log is pub...</p> <img src="https://cdn.hashnode.com/res/hashnode/image/stock/unsplash/cpIgNaazQ6w/upload/190ca33fa52e67aa1c87fb998adb84ed.jpeg" alt="Day 28 &#38; 29: Refactoring the Hell" height="512px"> <article><h2 id="heading-tldr">TLDR;</h2>
+<p>I made so many code smells due to time constraints, in this article I go over how I refactored/santify the repo for further development. I highlight few areas and my approach. If you find better approach, comment your voice 👍.</p>
+<p>Short log is published previously:</p>
+<p><a target="_blank" href="https://hashnode.com/post/clfik6fs2000809mb2divhtx4">Day 26: Filling the Gap</a></p>
+<p><a target="_blank" href="https://hashnode.com/post/clfjw7xye000009mg683v5xpf">Day 27: Filling Gap II</a></p>
+<hr />
+<h2 id="heading-impure-react-components">Impure React Components</h2>
+<p>Originally I had the page hero image components like this...</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">HeroImage</span>(<span class="hljs-params">{src}</span>) </span>{
+    <span class="hljs-keyword">const</span> imgSrc = sanitizeImageURL(src);
+    <span class="hljs-comment">// --snip--</span>
+    <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">src</span>=<span class="hljs-string">{imgSrc}</span> <span class="hljs-attr">...</span>/&gt;</span></span>);
+}
+</code></pre>
+<p>Any React veteran knows what's wrong here. NextJs wise, it is terrible.</p>
+<blockquote>
+<p>I happen to know this is bad, because I got <code>server output doesn't match the client</code> error.</p>
+</blockquote>
+<p>This is because <code>const imgSrc = sanitizeImageURL(src);</code> runs in client (browser) but <code>&lt;img src={imgSrc} .../&gt;</code> runs in server and served. Somehow this produced unstable DOM, sometimes rendering what server gave and sometime rendering client-side result.</p>
+<p>This behavior is because I didn't follow React guidelines. The component should be pure. <mark>Pure as in Function Programming</mark>.</p>
+<h3 id="heading-a-pure-function">A Pure Function</h3>
+<p>First of all, there's no such a thing as <em>Pure</em> function, what it really means in <strong>Functional Programming</strong> is, <a target="_blank" href="https://en.wikipedia.org/wiki/Injective_function"><strong><em>1-to-1 function</em></strong></a>.</p>
+<p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679583450223/d81d58a6-3a70-40f2-ad38-fb14b10efbec.png" alt class="image--center mx-auto" /></p>
+<p>My <code>HeroImage</code> function is not <em>injuective</em>. Because in server <code>src</code> is put to <code>img</code> without any alteration. But in browser, <code>src</code> is put into <code>sanitizeImageURL</code> and <code>img</code> with sanitized URL is returned. Here you see, for same <code>src</code> value, depending on the context, my function points to 2 different outputs. This is prohibited in <strong>Functional Programming</strong>.</p>
+<blockquote>
+<p>I still don't know why JavaScript skips the <code>const...</code> part in server though, after all I am just Backend Engineer, not Frondend (yet 😉)</p>
+</blockquote>
+<h4 id="heading-the-react-way">The React Way</h4>
+<p>For these reasones, react provides <code>useEffect</code> hook, that is use to run clientside codes and make our component injective. But, in my case, I can simply shift the snippet to <code>getStaticProps</code> and be done with it. Why?</p>
+<ul>
+<li>since this is run in bundling time, now page can just load the preprocessed <code>&lt;img/&gt;</code> tag. A performance win 🎉.</li>
+</ul>
+<p>So, now the page looks like...</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">HeroImage</span>(<span class="hljs-params">{src}</span>) </span>{
+    <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">src</span>=<span class="hljs-string">{src}</span> <span class="hljs-attr">...</span>/&gt;</span></span>);
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getStaticProps</span>(<span class="hljs-params">{slug}</span>) </span>{
+    <span class="hljs-comment">// --snip--</span>
+    page.map(<span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> p.feature_image = sanitizeImageURL(p.feature_image));
+    <span class="hljs-comment">// --snip--</span>
+}
+</code></pre>
+<hr />
+<h2 id="heading-dry-misc-pages">DRY Misc Pages</h2>
+<p>The <code>Page</code> for <em>academia, sports, clubs etc.</em> are of same structure. They have</p>
+<ul>
+<li><p>Title</p>
+</li>
+<li><p>Subtitle <em>html</em> content</p>
+</li>
+<li><p>Hero Image</p>
+</li>
+<li><p>Main body</p>
+</li>
+</ul>
+<p>And these are encapsulated by the <em>Header</em> &amp; <em>Footer.</em> Only different being the URL pattern.</p>
+<pre><code class="lang-apache"><span class="hljs-attribute">PREFIX</span>/sectionType/[slug]
+</code></pre>
+<p>The <code>[slug]</code> is gained from the pointing URL but the <code>sectionType</code> is from directory. The structure of the directory tree is</p>
+<p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679660886943/ba3bcde7-c448-47b0-b04e-a8a2741e24bc.png" alt class="image--center mx-auto" /></p>
+<p>But the underlying <code>Page</code> shares same logical structure, but each are independent. This ain't good for future developement. I should <strong>DRY</strong> this.</p>
+<h3 id="heading-extracting-pre-logic">Extracting Pre-logic</h3>
+<p>The loading logic was to use the URL-friendly version of the text displayed in the Nav-Menu. So, first of all I extracted them to a separate file.</p>
+<p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679661128082/e3f3d308-6bfb-4165-a3f0-3272d168bc9b.png" alt class="image--center mx-auto" /></p>
+<p>This has another added benefit. Changing the Nav-Menu is as just easy as commenting/adding new pages under the correct category. 👍.</p>
+<p>Then in each <code>getStaticPaths</code> for each section, I can just...</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// pages/features/[feature].tsx</span>
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getStaticPaths</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">paths</span>: FEATURES.map(<span class="hljs-function">(<span class="hljs-params">f</span>) =&gt;</span> ({
+      <span class="hljs-attr">params</span>: { <span class="hljs-attr">feature</span>: parseURL(f) },
+    })),
+    <span class="hljs-attr">fallback</span>: <span class="hljs-literal">false</span>,
+  };
+}
+</code></pre>
+<p>And the helper function is just <em>replacing</em> whitespaces with hyphens and upper ➡ left. Even though this could be just <code>url.replaceAll(' ', '-').toLowerCase()</code> but that didn't work out for me (idk why though 🤷‍♂️). So, hand-craft it is 🧤.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// misc/utils.ts</span>
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">parseURL</span>(<span class="hljs-params">url: string</span>) </span>{
+  <span class="hljs-keyword">let</span> newUrl = <span class="hljs-string">""</span>;
+  url = url.toLowerCase();
+
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> index = <span class="hljs-number">0</span>; index &lt; url.length; index++) {
+    <span class="hljs-keyword">const</span> c = url[index];
+    <span class="hljs-keyword">if</span> (c === <span class="hljs-string">" "</span>) {
+      newUrl = newUrl + <span class="hljs-string">"-"</span>;
+    } <span class="hljs-keyword">else</span> {
+      newUrl = newUrl + c;
+    }
+  }
+
+  <span class="hljs-keyword">return</span> newUrl;
+}
+</code></pre>
+<p>The only changing part of this approach is just to change the <code>FEATURES</code> with the corresponding group and <code>{ feature: parseURL(f)}</code> with relevant parameter. E.g. <code>{section: parseURL(a)}</code> for <em>academia</em> group.</p>
+<p>Now the <code>getStaticProps</code> is</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getStaticProps</span>(<span class="hljs-params">{ params }: any</span>) </span>{
+  <span class="hljs-keyword">const</span> page = <span class="hljs-keyword">await</span> fetchAndDecode(<span class="hljs-string">`pages/slug/<span class="hljs-subst">${params.feature}</span>`</span>);
+  <span class="hljs-keyword">const</span> sanitizedPage = sanitizePage(page);
+
+  <span class="hljs-keyword">return</span> { <span class="hljs-attr">props</span>: { <span class="hljs-attr">page</span>: sanitizedPage } };
+}
+</code></pre>
+<p>Only changing part is <code>${params.feature}</code>, this can also be generalized as <code>slug</code> or <code>key</code> but, this is more descriptive than them. Here, <code>sanitizePage</code> just parsing the <code>img.src</code> and <code>img.srcset</code> for the <a target="_blank" href="https://hashnode.com/post/clfjw7xye000009mg683v5xpf">aforementioned</a> bug.</p>
+<p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679661812084/fa9ff170-ec72-4574-838a-f31ff336b076.png" alt class="image--center mx-auto" /></p>
+<blockquote>
+<p>I know, that <code>page:any</code> part right? 😅.</p>
+</blockquote>
+<p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679662607795/c8aa4aa5-e0c3-45f6-b05c-8ab29104148d.gif" alt class="image--center mx-auto" /></p>
+<p>Then I created a <code>Page</code> custom component as</p>
+<p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679662758125/33d47a36-d174-4e96-8fce-15ede4e89b36.png" alt class="image--center mx-auto" /></p>
+<p>Then in each section I just</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Features</span>(<span class="hljs-params">props: any</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Page</span> <span class="hljs-attr">props</span>=<span class="hljs-string">{{</span> <span class="hljs-attr">...props</span>, <span class="hljs-attr">category:</span> "<span class="hljs-attr">Features</span>" }} /&gt;</span></span>;
+}
+</code></pre>
+<p>Only the <code>category</code> changes as per need. Now, it is <strong>DRY</strong> 😎.</p>
+<hr />
+<h2 id="heading-extro">Extro</h2>
+<p>That's all I can write without telling any much about private stuff. Hope this has been somewhat useful. Till we meet again it's <em>me the BE,</em> signing off 👋.</p>
+<hr />
+</article> </main> 

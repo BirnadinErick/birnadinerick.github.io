@@ -1,0 +1,50 @@
+<!DOCTYPE html> <nav> <ul> <li><a href="/">Home</a></li> <li><a href="/enigma-bits">Enigma Bits</a></li> </ul> </nav> <main> <h1>Learn this to learn any language - Part 1</h1> <p>Delve into the fundamental constructs of computer science, breaking down complex terminology and exploring the essence of Von Neumann Architecture. This article aims to bridge the gap between conventional math and the unique logic of computer science...</p> <img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1700360140724/38911700-0139-48c0-9758-3a9919fd1d3e.jpeg" alt="Learn this to learn any language - Part 1" height="512px"> <article><p>Delve into the fundamental constructs of computer science, breaking down complex terminology and exploring the essence of Von Neumann Architecture. This article aims to bridge the gap between conventional math and the unique logic of computer science.</p>
+<hr />
+<h2 id="heading-definitions">Definitions</h2>
+<p>Before moving on, we should define some terms to avoid confusion. This series shall assume...</p>
+<blockquote>
+<p>No axiomatization without insight</p>
+<p>--Christopher Strachey</p>
+</blockquote>
+<h3 id="heading-ignore-math">Ignore Math</h3>
+<p><img src="https://media.tenor.com/oSjs4A_vYRcAAAAC/stupid-math.gif" alt="Stupid Math GIF - Stupid Math Four GIFs" class="image--center mx-auto" /></p>
+<p><mark>Computer science is like calculus and non-Euclidean geometry</mark>; to understand it, one should break and assume rules that violate conventional math. Upcoming terms and customs might interfere with the math brain, but set it aside and learn computer science.</p>
+<h3 id="heading-von-neumann-architecture">Von Neumann Architecture</h3>
+<p>Above all, this is the foundation of any computer we will ever refer to. Understanding this architecture is crucial for comprehending the underlying methodologies and why things are the way they are.</p>
+<p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1700359973829/b640a8ba-cb5c-4abe-897f-de120d3cc590.png" alt="von neumann arch" class="image--center mx-auto" /></p>
+<hr />
+<h2 id="heading-defining-constructs">Defining Constructs</h2>
+<p>To explain the language in written form, we should be on the same page when I say some terms, so let's define a few ground rules. The following line in its entirety is called an <em>expression</em>:</p>
+<pre><code class="lang-python">x = <span class="hljs-number">2003</span>
+</code></pre>
+<p>A program is made of expressions ranging from simple, as above, and as moderately complex as below, which encapsulates many sub-units of expressions as well...</p>
+<pre><code class="lang-python">x = [i <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">2003</span>) <span class="hljs-keyword">if</span> i % <span class="hljs-number">2</span> == <span class="hljs-number">0</span>]
+</code></pre>
+<blockquote>
+<p>The purpose of an expression is to operate with memory in [Von Neumann Architecture](ppr-fcpl-0-defs#Von Neumann Architecture),</p>
+</blockquote>
+<p>...so in general, any expression can be reduced to a form of <code>L-val = R-val</code>. Here:</p>
+<ul>
+<li><p><code>L-val</code> is a form of an address or location of a memory cell</p>
+</li>
+<li><p><code>R-val</code> is a form of a value to be stored in the memory cell referenced by the corresponding <code>L-val</code></p>
+</li>
+<li><p><code>=</code> operand indicates the operation, <em>assignment.</em> <strong><s>Not essentially math's equal</s></strong></p>
+</li>
+</ul>
+<blockquote>
+<p>It is optional to have either <code>L-val</code> or <code>R-val</code>.</p>
+</blockquote>
+<p>In each such case, it can be thought of as:</p>
+<ul>
+<li><p>throw-away value</p>
+</li>
+<li><p>declaration (essentially reservation in advance) for a value of interest</p>
+</li>
+</ul>
+<p><strong>This is it</strong>. Now all we have to do is to learn how to get the desired <code>R-val</code> and how to indicate the CPU what our desired <code>L-val</code> is.</p>
+<blockquote>
+<p><mark>next, we will look at getting desired </mark> <code>R-val</code></p>
+</blockquote>
+<p>See you in the next article, till then, this is me, TheBE, signing off 👋.</p>
+</article> </main> 

@@ -1,0 +1,80 @@
+<!DOCTYPE html> <nav> <ul> <li><a href="/">Home</a></li> <li><a href="/enigma-bits">Enigma Bits</a></li> </ul> </nav> <main> <h1>Errors in Go - Beginner level</h1> <p>TLDR;
+This post delves into beginner-level error handling in Go. I will demonstrate Go&#39;s straightforward approach using the error value and emphasize the simplicity of handling errors with if statements. Custom error types, with examples, are introdu...</p> <img src="https://cdn.hashnode.com/res/hashnode/image/stock/unsplash/O_Xy25Dj7Mo/upload/be92caba8489a58bb12544093f196158.jpeg" alt="Errors in Go - Beginner level" height="512px"> <article><h3 id="heading-tldr">TLDR;</h3>
+<p>This post delves into beginner-level error handling in Go. I will demonstrate Go's straightforward approach using the <code>error</code> value and emphasize the simplicity of handling errors with <code>if</code> statements. Custom error types, with examples, are introduced for enhanced debugging. This concludes with a teaser for upcoming topics like error wrapping and <code>Is/As</code> constructs as well.</p>
+<h2 id="heading-basics">Basics</h2>
+<p>In Go, errors are handled in an anachronistic way. Just like rust and C(go's predecessor) errors are returned from a function to a caller; this value is separate (<code>error</code> Value) then the intended type when the execution is succeeded. The following code example illustrates this fact...</p>
+<pre><code class="lang-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">TryDivide</span><span class="hljs-params">(numerator, denominator <span class="hljs-keyword">int</span>)</span> <span class="hljs-params">(<span class="hljs-keyword">int</span>, error)</span></span> {
+    <span class="hljs-keyword">if</span> denominator == <span class="hljs-number">0</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>, error.New(<span class="hljs-string">"cannot divide by 0"</span>) <span class="hljs-comment">// an error is returned</span>
+    }
+    <span class="hljs-keyword">return</span> numeraotr / denominator, <span class="hljs-literal">nil</span> <span class="hljs-comment">// make error nill</span>
+}
+</code></pre>
+<p>In the above code following are to be derived:-</p>
+<ul>
+<li><p>return type is a tuple with the <strong>last</strong> record being an <code>error</code></p>
+</li>
+<li><p>when returning <code>error</code>, <em>other</em> records should be set to their <em>zero</em> values</p>
+</li>
+<li><p><code>error</code> init by <a target="_blank" href="http://error.New"><code>error.New</code></a><code>()</code> function</p>
+</li>
+<li><p><code>error</code> messages should</p>
+<ul>
+<li><p>start with lowercase</p>
+</li>
+<li><p>not to end with a newline or punctuation</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="heading-handling">Handling</h3>
+<p>Error handling in Go does not have any special constructs dedicated to it.</p>
+<blockquote>
+<p>Check with <code>if</code> and proceed</p>
+</blockquote>
+<pre><code class="lang-go">res, err = TryDivide(<span class="hljs-number">10</span>,<span class="hljs-number">3</span>)
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    <span class="hljs-comment">// logic to handle the error</span>
+    <span class="hljs-comment">// usually program exits or returns error of its own.</span>
+}
+
+<span class="hljs-comment">// move on with business logic</span>
+</code></pre>
+<p>The idiomatic way of handling an error:</p>
+<ul>
+<li><p>inside <code>if</code> is what handles the error</p>
+</li>
+<li><p>outside <code>if</code> is continued business logic</p>
+</li>
+</ul>
+<p>By the above pattern, a reader can follow along the code base rather than having to switch between the branches. The latter is evident in languages that have a construct of <code>try/catch</code> blocks; this will introduce a new branch the code could develop often leading to complex control flow.</p>
+<h3 id="heading-custom-errors">Custom Errors</h3>
+<p>often we may want to embed more information into error for later usage for debugging purposes. for example, we can include the parameters passed in or the environmental values configured at the time of the error etc;</p>
+<p>as with other places, go <code>error</code> is just an interface with one requirement</p>
+<pre><code class="lang-go"><span class="hljs-keyword">type</span> error <span class="hljs-keyword">interface</span> {
+    Error() <span class="hljs-keyword">string</span>
+}
+</code></pre>
+<p><code>error</code> is often called this <code>.Error()</code> function which returns a string(message or anything). So to create a custom error type for web-server handlers or so we can embed the status code as well...</p>
+<pre><code class="lang-go"><span class="hljs-keyword">type</span> ServerErr <span class="hljs-keyword">struct</span> {
+    code <span class="hljs-keyword">int</span>
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(se ServerErr)</span> <span class="hljs-title">Error</span><span class="hljs-params">()</span> <span class="hljs-title">string</span></span> {
+    <span class="hljs-keyword">return</span> fmt.Sprintf(<span class="hljs-string">"error code was: %i"</span>, se.code)
+}
+</code></pre>
+<hr />
+<h2 id="heading-conclusion">Conclusion</h2>
+<p>this was a very quick rundown. There are other concepts to cover like:</p>
+<ul>
+<li><p>wrapping</p>
+</li>
+<li><p><code>Is/As</code> constructs</p>
+</li>
+<li><p>sentinel errors</p>
+</li>
+</ul>
+<p>But they are not necessary for basic usage; I will cover them later. If you want it already, let me know in the replies. I will post it immediately once I write it. Follow for more web development-related concepts.</p>
+<p>Till then it's meTheBE, signing off.</p>
+</article> </main> 

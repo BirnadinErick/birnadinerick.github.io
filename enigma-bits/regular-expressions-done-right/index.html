@@ -1,0 +1,165 @@
+<!DOCTYPE html> <nav> <ul> <li><a href="/">Home</a></li> <li><a href="/enigma-bits">Enigma Bits</a></li> </ul> </nav> <main> <h1>Regular Expressions done right</h1> <p>A regular expression (here on, I will refer to as regex) is not scary as the meme states. It just needs a little patience and knowledge of the state diagram.
+
+
+Regex is just State Diagram!
+
+Only sounds fancy, but in a nutshell, it is just a primal fl...</p> <img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679672442314/d806b7aa-5f3b-46c5-98b8-06ddb7c444f5.png" alt="Regular Expressions done right" height="512px"> <article><blockquote>
+<p><em>A regular expression (here on, I will refer to as regex) is not scary as the meme states. It just needs a little patience and knowledge of the</em> <strong><em>state diagram.</em></strong></p>
+</blockquote>
+<hr />
+<h1 id="heading-regex-is-just-state-diagram"><strong>Regex is just State Diagram!</strong></h1>
+<blockquote>
+<p><em>Only sounds fancy, but in a nutshell, it is just a primal flowchart.</em></p>
+</blockquote>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*BtggalwtgftX6t2IemXJOA.jpeg" alt /></p>
+<p>from <a target="_blank" href="http://community.coda.io">community.coda.io</a></p>
+<hr />
+<p>Assume, you are to analyze users and their location. Since now a day everyone is anxious about their privacy they tend to mask their location. Your conclusion might be off and bring millions of $ lost. 😳. One way to do it is to ask phone number for 2FA and then analyze the phone number 😜. Just state it vaguely in the T&amp;C or Privacy Policy.</p>
+<p>So, phone numbers then, yeah, they have a system and encode location data. But a bump is that you never enforced a pattern to the end-user. So, when you try to look at the head, you see this,</p>
+<pre><code class="lang-javascript"><span class="hljs-number">000</span><span class="hljs-number">-02</span><span class="hljs-number">-2344</span>
+<span class="hljs-number">000</span> <span class="hljs-number">02</span> <span class="hljs-number">2343</span>
+<span class="hljs-number">001.23</span><span class="hljs-number">.2342</span>
+<span class="hljs-number">023</span><span class="hljs-number">-02</span><span class="hljs-number">-2344</span>
+</code></pre>
+<p>Imagine you have a million users or so. WTF! So, you sanitize at pre-processing state. How?</p>
+<pre><code class="lang-javascript">user_pns = [user.phone_number <span class="hljs-keyword">for</span> user <span class="hljs-keyword">in</span> Users()]
+pns_sanitized = []
+
+<span class="hljs-keyword">for</span> pn <span class="hljs-keyword">in</span> user_pns:
+  <span class="hljs-keyword">if</span> <span class="hljs-string">'-'</span> <span class="hljs-keyword">in</span> pn:
+    # sanitize how ever you want
+    pns_sanitized.append(pn.replace(<span class="hljs-string">'-'</span>, <span class="hljs-string">''</span>))
+  elif <span class="hljs-string">'.'</span> <span class="hljs-keyword">in</span> pn:
+    pass
+  <span class="hljs-attr">else</span>:
+    pass
+</code></pre>
+<p>But, what if someone inputs a phone number as <code>002-02.2344</code>. They must have been in hurry, so they mixed up delimiters. Your script will leave <code>.</code> out and you have inconsistent data to model. Heck even what if some lunatic used <code>*</code> or had <code>(...)</code> to indicate the beginning? Are going to write <em>if, elifs</em> for all of that?</p>
+<p>Do you realize that the fact each branching will penalize the performance write? If not search <strong>CPU Shadow Realm Exploitations</strong>. What should you do? Call parser’s 911, <strong>The Regex.</strong></p>
+<p>No matter how end-user input, the number will always be <code>xxx xx xxxx</code> or some other way depending on your users’ locality which you can query from where 2FA codes be sent (Cuz LTE or any cellular protocols require specific country data). Let’s consider the scenario of the pattern I mentioned above.</p>
+<p>The pattern <code>xxx xx xxxx</code> can be represented as <code>\D*\d{3}\D*\d{2}\D*\d{4}</code>. Gibberish? Let me tell you the lexemes or the grammar of <strong>Regex</strong>.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:511/1*AAiXM0KwFTFpC-Djt2QskQ.png" alt /></p>
+<p>for more, check the link below 👇</p>
+<h2 id="heading-regex-cheat-sheet-a-quick-guide-to-regular-expressions-in-pythonhttpswwwdataquestioblogregex-cheatsheet"><a target="_blank" href="https://www.dataquest.io/blog/regex-cheatsheet/">Regex Cheat Sheet: A Quick Guide to Regular Expressions in Python</a></h2>
+<hr />
+<p>So <code>\D*\d{3}\D*\d{2}\D*\d{4}</code> becomes: -</p>
+<ul>
+<li><p>Interest start can <em>** </em>,* start with non-numeric, <code>\D</code></p>
+</li>
+<li><p>then 3, <code>{3}</code>, numeric<code>\d</code>, follow</p>
+</li>
+<li><p>then optional <code>*</code> non-numeric, <code>\D</code></p>
+</li>
+<li><p>then after 2, <code>{2}</code> numeric, <code>\d</code></p>
+</li>
+<li><p>followed by optional <code>*</code> non-numeric</p>
+</li>
+<li><p>then 4 numeric.</p>
+</li>
+</ul>
+<p>OR, you can think of the regex as a map of how a finger should move across a piece of string, a state diagram.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*lnNrjFCFN02DUbl8CeWjsQ.png" alt /></p>
+<p>see, I told you 😘</p>
+<blockquote>
+<p><em>Now you can like ❤ the button is at the bottom of the screen 😎.</em></p>
+</blockquote>
+<p>Each logical piece represents each state.</p>
+<ul>
+<li><p>Special characters move the finger (<code>$ ^</code> or just EOL), <strong>start or stop</strong> signals,</p>
+</li>
+<li><p>groups are saved to memory, <strong>output to tape,</strong></p>
+</li>
+<li><p>characters indicate progresses of the finger like, move finger if and only if under the finger we have alpha-numeric (<code>\w</code>), <strong>creating conditionals,</strong></p>
+</li>
+<li><p>length/numbers represent how many times the finger should sense a given character, like 4 times <code>{4}</code> or should it be 0. <strong>Creating loops and sequences;</strong></p>
+</li>
+<li><p>If by any chance the finger can’t transition to the next state, then the machine terminates and starts from the beginning on another <em>window</em> of the specimen.</p>
+</li>
+</ul>
+<p><mark>See, it is just a state machine in disguise. Once you get this fundamental right, you are off to 🚀.</mark></p>
+<hr />
+<h1 id="heading-the-tip-to-compile-it"><strong>The Tip to compile it.</strong></h1>
+<ol>
+<li><p>Just take an example and put your finger on the leftmost side of the specimen.</p>
+</li>
+<li><p>Ask yourself what you should do to advance to the next character. Should you encounter a numeric or alpha or whitespace.</p>
+</li>
+<li><p>Do it till you find yourself at the right-most character of your specimen.</p>
+</li>
+<li><p>Now just like you factorize an integer, factorize your state transitions. E.g., if we have 12 then we can write it as <code>3 x 2 x 2</code>, that one becomes, <code>3 x 2^2</code>. So, we have a 3 and 2 appears <code>2</code> times.</p>
+</li>
+</ol>
+<p>Now, map it as a state diagram by head or if it is complex, take a piece of paper and just sketch it. No need to follow the symbology or conventions. It just should express what your mind says. Heck even, you can use <strong>Flow Chart</strong>. Because any state-machine or <em>Turing Machine</em> can be expressed via a Flow-Chart.</p>
+<p>Let’s look at an example. Say, we need to extract the names of people from phone book entries along with prefixes. Step 1 is to get an example.</p>
+<h2 id="heading-mas-birnadin-erick"><strong>Mas. Birnadin Erick</strong></h2>
+<ol>
+<li><p>Put your finger in the leftmost character, <code>M</code>.</p>
+</li>
+<li><p>Ask what we should do to progress to the right. <em>We should encounter</em> <strong><em>an</em></strong> <em>alphabet.</em></p>
+</li>
+<li><p>Then again, <strong><em>an</em></strong> <em>alphabet and so.</em></p>
+</li>
+<li><p><strong><em>A</em></strong> <em>period</em>, <code>.</code>;</p>
+</li>
+<li><p>Now <strong><em>a</em></strong> <em>whitespace</em> <code>_</code>,</p>
+</li>
+<li><p>Now <strong>an</strong> <em>alphabet</em>, but in <em>Uppercase</em>.</p>
+</li>
+<li><p>…</p>
+</li>
+</ol>
+<p>If in the diagram, then traces would be…</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*hDW4o0KIcukcskby0YdXFw.png" alt /></p>
+<p>from the start to 2nd state</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*80ips02sIfHQ8PNOpg2kxA.png" alt /></p>
+<p>from 2nd to 3rd</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*TMPeXddwIJB1uQIlVEhdHw.png" alt /></p>
+<p>from 3rd to nth</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*JpPIFpdLiXz9yFMv2DNULw.png" alt /></p>
+<p>nth to finish.</p>
+<p>Are we done? no there is another possible variant!</p>
+<h2 id="heading-ms-jane-doe"><strong>Ms. Jane Doe</strong></h2>
+<p>The difference would be from <em>2nd</em> to <em>3rd</em> we have to scan an s.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*TUAGDMJtlqCBagrWHSbo2g.png" alt /></p>
+<p>2nd to 3rd state transition changes</p>
+<p>Everything else stays the same, hence a common factor, have we. Done? Nope.</p>
+<h2 id="heading-mr-john-doe"><strong>Mr. John Doe</strong></h2>
+<p>This time, <em>2nd</em> to <em>3rd</em> trigger is <code>r</code>.</p>
+<p>So, <em>2nd</em> to <em>3rd</em> have more than one transition.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*dPUySP4eXsKMhuaci2xf5w.png" alt /></p>
+<p>different paths machine can deviate.</p>
+<p>And, in between an <em>nth</em> and (<em>n+1)th</em> state may share the same trigger but multiple times. E.g., along <code>irnadin</code> in <code>Birnadin</code>, <code>i</code> and <code>r</code> are the same trigger but have multiple points of presence.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*JMQKg9qjokpCxXS1jj_67w.png" alt /></p>
+<p>first pass;</p>
+<p>👆 can be simplified as 👇</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*9jCWFvJYU2n7_x0LbdhbDQ.png" alt /></p>
+<p>simplified on 2nd pass.</p>
+<p>So, as a <strong>result,</strong> our state diagram becomes like 👇</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*zKxfTXP1qVkyqVbWueQ09Q.png" alt /></p>
+<p>click to zoom and analyze 🔍</p>
+<h2 id="heading-compilation"><strong>Compilation</strong></h2>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*hDW4o0KIcukcskby0YdXFw.png" alt /></p>
+<p>gives: M</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*dPUySP4eXsKMhuaci2xf5w.png" alt /></p>
+<p>this gives: M[asr]</p>
+<p>Then the <code>.</code> gives us <code>M[asr]\W*</code> , there could be presence or absence;</p>
+<p>The whitespace gives us, <code>M[asr]\W*\s*</code>, there could be more than 1 space due to input errors;</p>
+<p>Then an Uppercase: <code>M[asr]\W*\s*[A-Z]</code>, you could actually say <code>\w</code> instead of <code>A-Z</code> if you want;</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*9jCWFvJYU2n7_x0LbdhbDQ.png" alt /></p>
+<p>we end up with: M[asr]\W*\s*[A-Z]\w*</p>
+<p>The same goes, thus we end up with 👇</p>
+<pre><code class="lang-javascript">M[asr]\W*\s*[A-Z]\w*\s*[A-Z]?\w* 
+# last [A-Z]?\w* means there could be last name or not
+
+# <span class="hljs-keyword">if</span> you know <span class="hljs-keyword">for</span> sure, prefix is delimitted by period
+M[asr]\.*\s*[A-Z]\w*\s*[A-Z]?\w*
+</code></pre>
+<p>Do you feel how easy it is? <mark>Told you </mark> <strong><mark>Regular Expression </mark></strong> <mark>is just </mark> <strong><mark>State Diagram </mark></strong> <mark>in disguise 🐑.</mark></p>
+<hr />
+<h1 id="heading-epilogue"><strong>Epilogue</strong></h1>
+<p>I hope I shed somewhat light on regex using how I understand it. If you disagree or have an example that contradicts, please let me know in the comments, would love to be corrected beforehand.</p>
+<p>Another post is coming soon using Regex in Python, Rust and JavaScript.</p>
+<p>If you are intrigued or interested in this kind of stuff, make sure you follow me on <a target="_blank" href="https://twitter.com/birnadin"><strong>Twitter</strong></a><strong>.</strong></p>
+<p>Till then, <em>it’s</em> <strong><em>me the BE,</em></strong> <em>signing off 👋</em></p>
+<p>Cover background by <strong>Steve Johnson.</strong></p>
+</article> </main> 
