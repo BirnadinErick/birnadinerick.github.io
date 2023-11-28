@@ -1,0 +1,203 @@
+<!DOCTYPE html> <nav> <ul> <li><a href="/">Home</a></li> <li><a href="/enigma-bits">Enigma Bits</a></li> </ul> </nav> <main> <h1>How to built a simple template engine with Python and regex</h1> <p>Prologue
+As I mentioned previously I want to create a static content creation system. The first step is A Template Engine. Rather than building a fully featured template engine, I am planning on what is just needed, in this major iteration.
+I have al...</p> <img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1675160154782/2fcf6438-c723-40a0-90e9-b1aaeb8195aa.jpeg" alt="How to built a simple template engine with Python and regex" height="512px"> <article><h2 id="heading-prologue">Prologue</h2>
+<p>As I mentioned <a target="_blank" href="https://fyi.birnadine.guru/so-i-joined-the-time-complexity-cult">previously</a> I want to create a static content creation system. The first step is A Template Engine. Rather than building a fully featured template engine, I am planning on what is just needed, in this major iteration.</p>
+<p><strong>I have also saved some bonus features for later major iterations 🎊.</strong></p>
+<p>With that being said, this major iteration(namely v1.0.0) will have 2 basic features:</p>
+<ol>
+<li><p>Including external templates into another, OR Inheritance, I guess 🤔</p>
+</li>
+<li><p>Looping over a dataset to produce multiple pages</p>
+</li>
+</ol>
+<p>Before anything, we should decide on the syntax. The generic one I have decided looks like...</p>
+<pre><code class="lang-plaintext">{ macro_name macro_parameter }
+</code></pre>
+<p>Without further ado, let's go 🏃‍♀️</p>
+<h3 id="heading-1-including-external-templates-into-another">1. Including external templates into another</h3>
+<p>For this, the syntax would look like this to embed another page called <code>index.html</code> into <code>base.html</code></p>
+<ul>
+<li><p><em>base.html</em></p>
+<pre><code class="lang-html">  <span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+      <span class="hljs-comment">&lt;!-- some generic content --&gt;</span>
+      { include content.main }
+  <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+</li>
+<li><p><em>index.html</em></p>
+<pre><code class="lang-xml">  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Welcome to SPC<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+</code></pre>
+</li>
+</ul>
+<p>So what I want to do is to read through <em>base.html</em> and replace the line if <code>{}</code> is encountered. We could do this in many different ways, but an easy one is <strong>the regex</strong> way.</p>
+<blockquote>
+<p><strong><em>regex</em></strong> stands for Regular Expression</p>
+</blockquote>
+<p>The usage of regex with python is much simple than other languages make it seem. If you want me to do a swing-by regex with <em>python</em>, please let me know in the comments.</p>
+<p>So to <em>substitute</em> the template we would do something like</p>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> re <span class="hljs-comment"># import the standard regex library</span>
+
+pattern = <span class="hljs-string">r'{\s?\w+\s(\w+.\w+)\s?}'</span> <span class="hljs-comment"># regex pattern to search for</span>
+specimen = <span class="hljs-string">"""
+&lt;html&gt;
+    &lt;head&gt;...&lt;/head&gt;
+    &lt;body&gt;
+        &lt;!-- some generic content --&gt;
+        { include content.main }
+    &lt;/body&gt;
+&lt;/html&gt;
+"""</span>
+replace = <span class="hljs-string">"&lt;h1&gt;Welcome to SPC&lt;/h1&gt;"</span>
+
+parsed_str = re.sub(pattern, replace, specimen) <span class="hljs-comment"># using .sub() from library</span>
+</code></pre>
+<p>Now if we write <code>parsed_str</code> to a file, will be the page we intended for. Now, let's encapsulate it into a function for modularity and to be DRY. Thus, the function would be</p>
+<pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">eval_include</span>(<span class="hljs-params">specimen, replacement</span>):</span>
+    <span class="hljs-keyword">global</span> pattern
+    <span class="hljs-keyword">return</span> re.sub(pattern, replacement, specimen)
+</code></pre>
+<blockquote>
+<p>If you are disgusted by the <code>global</code> keyword, just so you know, I am coming from assembly language and Cheat-Engine 😜, I am pretty comfortable with it.</p>
+</blockquote>
+<p>Now, an end user might use the library like</p>
+<pre><code class="lang-python"><span class="hljs-keyword">from</span> os.path <span class="hljs-keyword">import</span> realpath
+<span class="hljs-keyword">from</span> mathew.macros <span class="hljs-keyword">import</span> eval_include
+
+base = <span class="hljs-string">""</span>
+<span class="hljs-keyword">with</span> open(realpath(<span class="hljs-string">"templates/base.html"</span>), <span class="hljs-string">"r"</span>) <span class="hljs-keyword">as</span> b:
+    base = b.read()
+
+index_template = <span class="hljs-string">""</span>
+<span class="hljs-keyword">with</span> open(realpath(<span class="hljs-string">"templates/index.html"</span>), <span class="hljs-string">"r"</span>) <span class="hljs-keyword">as</span> i:
+    index_template = i.read()
+
+<span class="hljs-keyword">with</span> open(realpath(<span class="hljs-string">"out/index.html"</span>), <span class="hljs-string">"w"</span>) <span class="hljs-keyword">as</span> i:
+    i.write(
+        eval_include(base, index) <span class="hljs-comment"># do the templating magic 🧙‍♂️</span>
+    )
+</code></pre>
+<p>Parsed page can be found in the <code>out/</code> dir. File discovery and all other stuff will be automated later. For now, let's just focus on one thing.</p>
+<h3 id="heading-2-looping-over-a-dataset-to-produce-multiple-pages">2. Looping over a dataset to produce multiple pages</h3>
+<p>Let's say, we have a list of article titles to display on the homepage of the blog page. E.g.</p>
+<ol>
+<li><p><em>pubslist.html</em></p>
+<pre><code class="lang-xml"> <span class="hljs-tag">&lt;<span class="hljs-name">section</span>&gt;</span>
+     <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Patrician Publications<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+     { include pubsdetail.html }
+ <span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+</code></pre>
+</li>
+<li><p><em>pubslistitem.html</em></p>
+<pre><code class="lang-xml"> <span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
+         <span class="hljs-tag">&lt;<span class="hljs-name">h4</span>&gt;</span>{ eval pubs.title}<span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
+         <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>{eval pubs.cat }<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+         <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{ eval pubs.sum }<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+ <span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span>
+</code></pre>
+</li>
+<li><p>and the <em>dataset</em></p>
+<pre><code class="lang-json"> {<span class="hljs-attr">"pubs"</span>: [
+ {<span class="hljs-attr">"title"</span>: <span class="hljs-string">"Some 404 content"</span>, <span class="hljs-attr">"cat"</span>: <span class="hljs-string">"kavik"</span>, <span class="hljs-attr">"sum"</span>: <span class="hljs-string">"Summary 501"</span>},
+ {<span class="hljs-attr">"title"</span>: <span class="hljs-string">"Some 403 content"</span>, <span class="hljs-attr">"cat"</span>: <span class="hljs-string">"eric"</span>, <span class="hljs-attr">"sum"</span>: <span class="hljs-string">"Summary 502"</span>},
+ {<span class="hljs-attr">"title"</span>: <span class="hljs-string">"Some 402 content"</span>, <span class="hljs-attr">"cat"</span>: <span class="hljs-string">"beric"</span>, <span class="hljs-attr">"sum"</span>: <span class="hljs-string">"Summary 503"</span>},
+ {<span class="hljs-attr">"title"</span>: <span class="hljs-string">"Some 401 content"</span>, <span class="hljs-attr">"cat"</span>: <span class="hljs-string">"manuk"</span>, <span class="hljs-attr">"sum"</span>: <span class="hljs-string">"Summary 504"</span>},
+ ]}
+</code></pre>
+</li>
+</ol>
+<p>The dataset can be mapped to python's <em>dict</em> without any logic. The difference between embedding another template from evaluating a variable and creating many pages by just replacing the data in the template appropriately and embedding the end-string to the destination template. Let's do it, shall we?</p>
+<p>For evaluating the variable, we could use the <strong>Groups</strong> feature in the regex. That's what the <code>()</code> around the <code>\w+.\w+</code> in the pattern for. We can easily access the matched string slice by the <code>.group()</code> method on the <code>match</code> object returned by <code>re</code> lib-functions.</p>
+<pre><code class="lang-python">str_1 = <span class="hljs-string">"Hello 123"</span>
+pattern = <span class="hljs-string">r'\w+\s(\d+)'</span>
+digits = re.finditer(patter, str) <span class="hljs-comment"># returns aggregation of `match` objects</span>
+
+<span class="hljs-keyword">for</span> digit <span class="hljs-keyword">in</span> digits:
+    print(digit.group(<span class="hljs-number">1</span>)) <span class="hljs-comment"># 123</span>
+</code></pre>
+<blockquote>
+<p>Notice we are calling for <em>1</em>, not <em>0</em>. Nothing that the lib is 1-index, it is 0-indexed but 0^th index is the entire str, "Hello 123"</p>
+</blockquote>
+<p>Remember the <code>.sub()</code> method, its second parameter accepts either <code>str</code> or a <code>callable</code>. This callable will get a <code>match</code> object as an argument for each matched pattern validates. So we can produce dynamic replacements based on each <code>match</code> like...</p>
+<pre><code class="lang-python"><span class="hljs-comment"># retriving the key from template string</span>
+key = m.group(<span class="hljs-number">1</span>) <span class="hljs-comment"># == pubs.title</span>
+key = key.split(<span class="hljs-string">"."</span>) <span class="hljs-comment"># == ["pubs", "title"]</span>
+key = key[<span class="hljs-number">1</span>] <span class="hljs-comment"># == "title"</span>
+
+<span class="hljs-comment"># evaluating the variable with i^th record from dataset</span>
+re.sub(
+       pattern, <span class="hljs-comment"># the pattern</span>
+       <span class="hljs-keyword">lambda</span> m: dataset[<span class="hljs-string">"pubs"</span>][i][key]
+)
+</code></pre>
+<blockquote>
+<p>If <code>lambda</code> is mysterious for you, it is a way to define an <strong><em>anonymous</em></strong> or <strong><em>inline</em></strong> function in python</p>
+</blockquote>
+<p>Defining functions for lib API be</p>
+<pre><code class="lang-python"><span class="hljs-comment"># map each datumset</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__eval_map</span>(<span class="hljs-params">string, data</span>):</span>
+    <span class="hljs-keyword">global</span> pattern
+    <span class="hljs-keyword">return</span> re.sub(
+        pattern, <span class="hljs-keyword">lambda</span> m: data[m.group(<span class="hljs-number">1</span>).split(<span class="hljs-string">"."</span>)[<span class="hljs-number">1</span>]], string
+    )
+
+<span class="hljs-comment"># parse the batch of dataset</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">parse_template</span>(<span class="hljs-params">template, data</span>):</span>
+    <span class="hljs-keyword">return</span> [
+            __eval_map(template, datum)
+            <span class="hljs-keyword">for</span> datum <span class="hljs-keyword">in</span> data
+        ]
+</code></pre>
+<blockquote>
+<p><code>parse_template</code> returns aggregated results using <strong><em>list comprehension</em></strong> syntax, if you are unfamiliar with the syntax let me know in the comment</p>
+</blockquote>
+<p>So accessing the key to evaluate is just as breezy as...</p>
+<pre><code class="lang-python"><span class="hljs-keyword">from</span> os.path <span class="hljs-keyword">import</span> realpath
+<span class="hljs-keyword">from</span> mathew.macros <span class="hljs-keyword">import</span> parse_template, eval_include
+
+specimen = <span class="hljs-string">"""
+&lt;article&gt;
+    &lt;h4&gt;{ eval pubs.title}&lt;/h4&gt;
+    &lt;span&gt;{eval pubs.cat }&lt;/span&gt;
+    &lt;p&gt;{ eval pubs.sum }&lt;/p&gt;
+&lt;/article&gt;
+"""</span>
+dataset = {
+       <span class="hljs-string">"pubs"</span>: [
+        {<span class="hljs-string">"title"</span>: <span class="hljs-string">"Some 404 content"</span>, <span class="hljs-string">"cat"</span>: <span class="hljs-string">"kavik"</span>, <span class="hljs-string">"sum"</span>: <span class="hljs-string">"Summary 501"</span>},
+        {<span class="hljs-string">"title"</span>: <span class="hljs-string">"Some 403 content"</span>, <span class="hljs-string">"cat"</span>: <span class="hljs-string">"eric"</span>, <span class="hljs-string">"sum"</span>: <span class="hljs-string">"Summary 502"</span>},
+        {<span class="hljs-string">"title"</span>: <span class="hljs-string">"Some 402 content"</span>, <span class="hljs-string">"cat"</span>: <span class="hljs-string">"beric"</span>, <span class="hljs-string">"sum"</span>: <span class="hljs-string">"Summary 503"</span>},
+        {<span class="hljs-string">"title"</span>: <span class="hljs-string">"Some 401 content"</span>, <span class="hljs-string">"cat"</span>: <span class="hljs-string">"manuk"</span>, <span class="hljs-string">"sum"</span>: <span class="hljs-string">"Summary 504"</span>},
+        ],
+    }
+
+<span class="hljs-comment"># parse each `&lt;article&gt;` tag for each list item</span>
+parsed_str = parse_template(specimen, dataset[<span class="hljs-string">"pubs"</span>])
+
+<span class="hljs-comment"># join the `&lt;article&gt;` tag-group</span>
+pubs_list_items = <span class="hljs-string">""</span>.join(parsed_str)
+
+pubs_list_template = <span class="hljs-string">""</span>
+<span class="hljs-keyword">with</span> open(realpath(<span class="hljs-string">"templates/pubslist.html"</span>), <span class="hljs-string">"r"</span>) <span class="hljs-keyword">as</span> p:
+    pubs_list_template = p.read()
+
+<span class="hljs-comment"># parse the `pubs_list` itself</span>
+parsed_list = eval_include(pubs_list_template, pubs_list_items) 
+
+<span class="hljs-comment"># write the final file with base</span>
+<span class="hljs-keyword">with</span> open(realpath(<span class="hljs-string">"out/pubs.html"</span>), <span class="hljs-string">"w"</span>) <span class="hljs-keyword">as</span> i:
+    i.write(
+        eval_include(base, parsed_list)
+    )
+</code></pre>
+<p>Final <code>pubslist.html</code> will be in <code>out/</code> directory.</p>
+<h2 id="heading-done">Done?</h2>
+<p>Not quite so. Did you notice the fact, that we still have to read the template string manually, have the data populate in a specific format and the parsing of the template is still manual.</p>
+<p>These are for later. For now, we have a simple working template engine that does the job I intended it for. I am happy with it.</p>
+<p>Another thing, keen eyes might have noticed is the <code>macro_name</code> in the template does nothing, in fact, if you swap <code>include</code> with <code>eval</code> or anything, as long as the latter part is valid, the script does its job. This is a bad design but the worst part is our <code>eval_include</code> allows only one template. Gotta fix that!</p>
+<h2 id="heading-epilogue">Epilogue</h2>
+<p>I guess I don't have anything further, so I will just sign off, this is BE signing off.</p>
+<p>Cover by <strong>Suzy Hazelwood</strong></p>
+</article> </main> 

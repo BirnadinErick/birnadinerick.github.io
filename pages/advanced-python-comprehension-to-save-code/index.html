@@ -1,0 +1,165 @@
+<!DOCTYPE html> <nav> <ul> <li><a href="/">Home</a></li> <li><a href="/enigma-bits">Enigma Bits</a></li> </ul> </nav> <main> <h1>Advanced Python: Comprehension to save code</h1> <p>Ever got annoyed when you want a list of items from another sequence but had to write a for/while loop? Did you know you could have done it in one line? I am not just taking about list, you can do this trick with any standard sequence like dictionary...</p> <img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679673152013/68769cc0-b37c-4a0a-9147-bbd3a177a37d.png" alt="Advanced Python: Comprehension to save code" height="512px"> <article><p>Ever got annoyed when you want a list of items from another sequence but had to write a <em>for</em>/<em>while</em> loop? Did you know you could have done it in one line? I am not just taking about list, you can do this trick with any standard sequence like <em>dictionary</em>, <em>set</em> and any custom <em>generators</em>.</p>
+<p>Executable Codesandbox…</p>
+<h1 id="heading-comprehension-you-say"><strong>Comprehension, you say?</strong></h1>
+<p>Comprehension in python is just a <strong>syntactic sugar</strong> for a loop and <em>.append()</em> statement.</p>
+<p>Let’s say we have database query of blog posts with attribute of <em>publish_at</em>, by design this is a way this system supports scheduled blog post and if current datetime is latest than this, then response will contain filtered blog post items.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">from</span> datetime.datetime <span class="hljs-keyword">import</span> now
+
+blogs_filtered = [
+  (blog.title(), blog.category()) # what to save
+  <span class="hljs-keyword">for</span> blog <span class="hljs-keyword">in</span> blogs               # what to iterate
+  <span class="hljs-keyword">if</span> blog.publish_at &lt;= now()     # any filtering condiitonal
+]
+</code></pre>
+<p>As you can see, we iterate over query results, <code>blogs</code> and if <code>publish_at &lt; now()</code> i.e. if <code>publish_at is latest than now()</code> we save the query’s <code>title</code> &amp; <code>category</code>. <strong>If we didn’t use comprehensions, then the snippet would be like,</strong></p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">from</span> datetime.datetime <span class="hljs-keyword">import</span> now
+
+blogs_filtered = []
+<span class="hljs-keyword">for</span> blog <span class="hljs-keyword">in</span> blogs:                    # what to iterate
+  <span class="hljs-keyword">if</span> blog.publish_at &lt;= now():      # any filtering condiitonal
+    blogs_filtered.append(
+     (blog.title(), blog.category())  # what to save
+    )
+</code></pre>
+<p>See? Comprehensions saves you lines, which means less byte-code to process thus comparatively faster execution; less mental power to <em>comprehend</em> what the snippet does and also can be written in one line 😎.</p>
+<p>Not just <em>list</em> but <em>dict</em>s also. E.g., we have 2 lists one should be key and other should be its corresponding value, given that the position of these items are already in place.</p>
+<pre><code class="lang-javascript">keys = [...] # some keys
+vals = [...] # some values
+
+assert(len(keys) == len(vals)) # just <span class="hljs-keyword">in</span> <span class="hljs-keyword">case</span>
+
+# dict comprehension
+dict_needed = {<span class="hljs-attr">k</span>:v <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> zip(keys,vals)}
+</code></pre>
+<p>If not for <em>comprehensions</em>, then you would have gone like this:</p>
+<pre><code class="lang-javascript">keys = [...] # some keys
+vals = [...] # some values
+
+assert(len(keys) == len(vals)) # just <span class="hljs-keyword">in</span> <span class="hljs-keyword">case</span>
+
+# already seen <span class="hljs-keyword">for</span> loop, thus <span class="hljs-keyword">let</span><span class="hljs-string">'s use while loop
+i = len(keys)
+dict_needed = {}
+while i:
+  dict_needed[keys[i]] = vals[i]
+  i -= 1</span>
+</code></pre>
+<p>Which one is concise? Let me know in the comments. Let’s examine the syntax.</p>
+<h1 id="heading-the-syntax"><strong>The Syntax</strong></h1>
+<h2 id="heading-list-comprehension"><strong>List Comprehension</strong></h2>
+<pre><code class="lang-javascript">list_out = [element <span class="hljs-keyword">for</span> element <span class="hljs-keyword">in</span> sequence <span class="hljs-keyword">if</span> condition]
+</code></pre>
+<p>Here, <code>sequence</code> can be any generator or iterator and <code>element</code> is each element in the <code>sequence</code>; and it is committed to the output is <code>condition</code> evaluates to <code>True</code>.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:451/1*WJ3k1qOj9SAfQ4h1Wl5xIA.png" alt="list comprehension in actions" /></p>
+<p>src/list-comp.py from the codesandbox.</p>
+<h2 id="heading-dictionary-comprehension"><strong>Dictionary Comprehension</strong></h2>
+<pre><code class="lang-javascript">dict_out = {<span class="hljs-attr">k</span>:v <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> dict <span class="hljs-keyword">if</span> condition}
+</code></pre>
+<p>Same as list comprehension but using <em>tuple unpacking,</em> we can separate the key and value of each record and operate on them; conditional block operates the same though.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:562/1*6jGDBXtnpYXq5JgWNP2Hrg.png" alt="dict comprehension in action" /></p>
+<p>src/dict-comp.py from the codesandbox.</p>
+<h2 id="heading-set-comprehension"><strong>Set Comprehension</strong></h2>
+<pre><code class="lang-javascript">set_out = {i <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> sequence <span class="hljs-keyword">if</span> condition}
+</code></pre>
+<p>Looks like combination of list and dictionary, eh? Functionality is the same.</p>
+<h2 id="heading-so"><strong>So</strong></h2>
+<p>Comprehension in a nutshell being: -</p>
+<ul>
+<li><p>operation on <code>el</code>,</p>
+</li>
+<li><p>an iterator lexemes, <code>for el in els</code>,</p>
+</li>
+<li><p>a conditonal, <code>if condition</code>, that filters out commition of <code>el</code> based on returned boolean <em>(optional),</em></p>
+</li>
+<li><p>surrounded by either <code>[]</code> or <code>{}</code> to indicate what datatype to produce.</p>
+</li>
+</ul>
+<h1 id="heading-complex-patterns"><strong>Complex Patterns</strong></h1>
+<h2 id="heading-creating-hashmap-of-titles-and-their-category"><strong>Creating <em>hashmap of titles and their category</em></strong></h2>
+<p>Assume, we have list of <code>Blog</code>s whose <code>title</code> have to be indexed according to corresponding <code>category</code>. If <code>Blog</code> is defined as…</p>
+<pre><code class="lang-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Blog</span>:
+  <span class="hljs-title">title</span>: <span class="hljs-title">str</span>
+  <span class="hljs-title">category</span>: <span class="hljs-title">str</span>
+  # <span class="hljs-title">other</span> <span class="hljs-title">attributes</span>
+
+  <span class="hljs-title">def</span> <span class="hljs-title">__init__</span>(<span class="hljs-title">self</span>, <span class="hljs-title">t</span>, <span class="hljs-title">c</span>):
+    <span class="hljs-title">self</span>.<span class="hljs-title">title</span> </span>= t
+    self.category = c
+
+  def __repr__(self):
+    <span class="hljs-keyword">return</span> self.title.lower()
+</code></pre>
+<p>And let’s create a helper function to generate <em>n</em> no. of blogs.</p>
+<pre><code class="lang-javascript">def _gen_blogs(n):
+    <span class="hljs-keyword">from</span> random <span class="hljs-keyword">import</span> randint
+    <span class="hljs-keyword">return</span> [Blog(<span class="hljs-string">'blog title'</span>+str(i), str(randint(<span class="hljs-number">0</span>,<span class="hljs-number">100</span>))) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>,n+<span class="hljs-number">1</span>)]
+</code></pre>
+<p>You can clearly tell that <em>list comprehension is used.</em> This is a fairly good example when a <strong>syntactic sugar</strong> being more of a pain in the finger. When I am faced with such a gibberish I used to format it in 3+ lines based of the abstract lexemes, see code-block-1.</p>
+<pre><code class="lang-javascript">def _gen_blogs(n):
+  <span class="hljs-keyword">from</span> random <span class="hljs-keyword">import</span> randint
+  <span class="hljs-keyword">return</span> [
+    Blog(
+      <span class="hljs-string">'blog title'</span>+str(i), str( randint(<span class="hljs-number">0</span>,<span class="hljs-number">100</span>) )
+    )                       # what to commit
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>,n+<span class="hljs-number">1</span>)   # what to iterate
+                            # no conditional
+  ]
+</code></pre>
+<p>Right away a bad practice of defining <em>import</em> statement in the local function. Then readability being shot down by <em>comprehensions</em>.</p>
+<p>If we disect the <em>return</em> statement, we are iterating to arithmetic progression of common difference 1, i.e. <code>1,2,3,...,n-2,n-1,n</code>. Each iteration <code>i</code> takes each value. Then for each iteration, a <code>Blog</code> instance is created with <em>title</em> of <code>blog title {i}</code>, e.g. for 3rd iteration title will be <code>blog title 3</code>; And each instance will have the <em>category</em> of a pseudo-random integer generated in between 0 and 100 (exclusive).</p>
+<p>Then <strong>generation of map</strong> will be…</p>
+<pre><code class="lang-javascript">def map_title_to_category():
+    blogs = _gen_blogs(<span class="hljs-number">4</span>) # generate <span class="hljs-number">4</span> blogs, play <span class="hljs-keyword">with</span> <span class="hljs-number">4</span> <span class="hljs-keyword">if</span> you want 😁
+    out = {blog.title:blog.category <span class="hljs-keyword">for</span> blog <span class="hljs-keyword">in</span> blogs} # mapping
+    map_result(blogs, out)
+</code></pre>
+<p>Try to understand the block,</p>
+<pre><code class="lang-javascript">out = {blog.title:blog.category <span class="hljs-keyword">for</span> blog <span class="hljs-keyword">in</span> blogs}
+</code></pre>
+<p>Hope you can, it ain’t much. If you are stuck, use the comments, I will reply.</p>
+<h2 id="heading-you-can-actually-chain-them"><strong>You can actually chain them.</strong></h2>
+<pre><code class="lang-javascript">def alpha_pos():
+    m = {<span class="hljs-attr">a</span>:p <span class="hljs-keyword">for</span> a,p <span class="hljs-keyword">in</span> zip([chr(i) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">97</span>,<span class="hljs-number">123</span>)], [p <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>, <span class="hljs-number">27</span>)]) <span class="hljs-keyword">if</span> a not <span class="hljs-keyword">in</span> <span class="hljs-string">"a.e.i.o.u"</span>.split(<span class="hljs-string">"."</span>)}
+    map_result([[chr(i) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">97</span>,<span class="hljs-number">123</span>)], [p <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>, <span class="hljs-number">27</span>)]], m) # just <span class="hljs-keyword">for</span> pretty output
+</code></pre>
+<p><img src="https://miro.medium.com/v2/resize:fit:636/1*YOkf9ur23NTiyytHCMaBwQ.png" alt="chaining comprehensions" /></p>
+<p>src/chain-comp.py</p>
+<p>It is the chain that makes it hard to read, not the logic. Try to interpret on your own, and if you need help, I am just a comment away. <em>Hint: make each comprehensions a separate variable and analyze</em>.</p>
+<h2 id="heading-with-a-pinch-of-salt-amp-a-punch-of-lime"><strong>With a pinch of salt &amp; a punch of lime</strong></h2>
+<p>To be efficient, let’s save user configuration in <em>bitmask</em> instead of <em>Json</em> etc.</p>
+<blockquote>
+<p><em>If you think JSON is better way to save data, the watch this</em> <a target="_blank" href="https://www.youtube.com/watch?v=MuCK81q1edU"><strong><em>short video</em></strong></a><em>.</em></p>
+</blockquote>
+<p>By design we are saving 4 toggles (but you can go wild) with 4 bits, each being,</p>
+<pre><code class="lang-javascript">dark-mode  data-saver-on  auto-play  auto-update
+  <span class="hljs-number">1</span>|<span class="hljs-number">0</span>        <span class="hljs-number">1</span>|<span class="hljs-number">0</span>            <span class="hljs-number">1</span>|<span class="hljs-number">0</span>        <span class="hljs-number">1</span>|<span class="hljs-number">0</span>
+</code></pre>
+<p>Altogether there are 16 permutations. If we are doing analysis, where we need to decide whether we keep data-saver algorithm, you are tasked with finding no of users, you can go about doing this as,</p>
+<pre><code class="lang-javascript">users = [] # our specimen
+num = len([u <span class="hljs-keyword">for</span> u <span class="hljs-keyword">in</span> users <span class="hljs-keyword">if</span> u.conf | <span class="hljs-number">0b0100</span>]) # extremly simplified <span class="hljs-keyword">for</span> brevity
+</code></pre>
+<p>In another scenario, say we are changing our database design and decided to not let users have period <code>.</code> in the end of the <em>username</em>. To save the day and show dominance let’s use a one-liner even though we could have gone with readable script of poly-liner 😎.</p>
+<pre><code class="lang-javascript"># Lazy loading the billion users
+def get_users():
+  i = <span class="hljs-number">0</span>
+  <span class="hljs-keyword">while</span> i &lt; <span class="hljs-number">3</span> * <span class="hljs-number">10</span>**<span class="hljs-number">12</span>:
+    # <span class="hljs-built_in">this</span> is mapped <span class="hljs-keyword">in</span> the data presentation layer, 
+    # not that we are indexing off <span class="hljs-keyword">of</span> a list
+    <span class="hljs-keyword">yield</span> User[i]
+    i += <span class="hljs-number">1</span>
+</code></pre>
+<pre><code class="lang-javascript"><span class="hljs-keyword">for</span> user <span class="hljs-keyword">in</span> get_users():
+  user.uname = user.uname <span class="hljs-keyword">if</span> user.uname[<span class="hljs-number">-1</span>] != <span class="hljs-string">'.'</span> <span class="hljs-keyword">else</span> user.uname[:<span class="hljs-number">-1</span>]
+  user.commit() # or whatever
+</code></pre>
+<p>Can be…</p>
+<pre><code class="lang-javascript">_ = map(lambda u: u.commit(), [lambda u: u.uname[:<span class="hljs-number">-1</span>] <span class="hljs-keyword">if</span> u.uname[<span class="hljs-number">-1</span>] == <span class="hljs-string">'.'</span> <span class="hljs-keyword">else</span> u.uname <span class="hljs-keyword">for</span> user <span class="hljs-keyword">in</span> (User[i] <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">3</span> * <span class="hljs-number">10</span>**<span class="hljs-number">12</span> + <span class="hljs-number">1</span>))])
+</code></pre>
+<p>…like this.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:297/1*c4iLtesqc1a1lXK8uOKQkQ.gif" alt /></p>
+<p>now show dominance 😎.</p>
+<h1 id="heading-epilogue"><strong>Epilogue</strong></h1>
+<p>That’s all I can think of. If you are intrigued and interested, make sure you follow me on <a target="_blank" href="https://www.medium.com/@birnadin">Medium</a> or <a target="_blank" href="https://twitter.com/birnadin">Twitter</a> for follow up.</p>
+<p>See you in another one, till then <strong><em>it’s me the BE,</em></strong> signing off 👋.</p>
+<p>Cover background by <a target="_blank" href="https://www.pexels.com/@jan-karan/"><strong>Jan Karan</strong></a> &amp; Code to PNG using <a target="_blank" href="http://Ray.so"><strong><em>Ray.so</em></strong></a></p>
+</article> </main> 

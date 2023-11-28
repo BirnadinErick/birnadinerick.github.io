@@ -1,0 +1,122 @@
+<!DOCTYPE html> <nav> <ul> <li><a href="/">Home</a></li> <li><a href="/enigma-bits">Enigma Bits</a></li> </ul> </nav> <main> <h1>Advanced Python: The lambda</h1> <p>Ever had to write this…
+def func(n):
+  # only allow `l` no of characters in the `n` string
+  return n[:l+1]
+
+parsed_n_s = map(seq, func)
+
+When you could have done this…
+# only allow `l` no of characters in the `n` string
+parsed_n_s = map(seq, lambda ...</p> <img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1679673487891/61ac1b6f-6db1-4282-a6ec-42c87ddead58.png" alt="Advanced Python: The lambda" height="512px"> <article><p>Ever had to write this…</p>
+<pre><code class="lang-javascript">def func(n):
+  # only allow <span class="hljs-string">`l`</span> no <span class="hljs-keyword">of</span> characters <span class="hljs-keyword">in</span> the <span class="hljs-string">`n`</span> string
+  <span class="hljs-keyword">return</span> n[:l+<span class="hljs-number">1</span>]
+
+parsed_n_s = map(seq, func)
+</code></pre>
+<p>When you could have done this…</p>
+<pre><code class="lang-javascript"># only allow <span class="hljs-string">`l`</span> no <span class="hljs-keyword">of</span> characters <span class="hljs-keyword">in</span> the <span class="hljs-string">`n`</span> string
+parsed_n_s = map(seq, lambda n: n[:l+<span class="hljs-number">1</span>]) # is <span class="hljs-built_in">this</span> more readable?
+</code></pre>
+<p>Read along to learn WTF is this <em>lambda</em> anyway.</p>
+<h2 id="heading-2-kinds-of-python-functions"><strong>2 kinds of Python functions</strong></h2>
+<p>Python supports two kinds of functions, no, I am not talking about a standalone function and a method of a class. I meant <em>named</em> and <strong><em>anonymous</em></strong> functions. If you have been doing it the first way, you know what named functions are. For the record,</p>
+<pre><code class="lang-javascript">def func(param):
+  # body
+  pass
+</code></pre>
+<p>And the anonymous goes like</p>
+<pre><code class="lang-javascript">lambda param: pass #body
+</code></pre>
+<p>Anonymous means you don’t get to call it by a name. It’s just temporary, a quickie. But you can go out of your way and can do this though.</p>
+<pre><code class="lang-javascript">func = lambda param: pass # body
+</code></pre>
+<p>This style might help you if the function body is so simple and writing the whole <code>def ...</code> shenanigan is a waste of time, space, and effort.</p>
+<h1 id="heading-quickie-not-shorty"><strong>Quickie, not Shorty</strong></h1>
+<p>Even though <em>lambda</em> seems simple, it is so powerful enough to execute somewhat complex logic. Not flexible as the <em>named</em> function though 🤷‍♂️. How complex you asked?</p>
+<p>This 👇</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*Si7DfPZaXGMK4Wu1_8QtDQ.png" alt /></p>
+<p>extract from another post</p>
+<p>Can become, this 👇</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:700/1*2CgBK0LxWfdwSqqXkIQFUw.png" alt /></p>
+<p>another extract from the same post</p>
+<p>I wouldn’t recommend this kind of one-liner in a prolonged codebase, but for quick scripts it does the job pretty well, saving some typing time. For context, please read my post on <a target="_blank" href="https://medium.com/@birnadin/advanced-python-comprehensions-c6914520323a">Python Comprehension</a>.</p>
+<h2 id="heading-advanced-python-comprehensionshttpsmediumcombirnadinadvanced-python-comprehensions-c6914520323a"><a target="_blank" href="https://medium.com/@birnadin/advanced-python-comprehensions-c6914520323a">Advanced Python: Comprehensions</a></h2>
+<h3 id="heading-powerful-one-liners-for-generators-in-python3httpsmediumcombirnadinadvanced-python-comprehensions-c6914520323a"><a target="_blank" href="https://medium.com/@birnadin/advanced-python-comprehensions-c6914520323a">Powerful one-liners for generators in python3</a></h3>
+<p><a target="_blank" href="http://medium.com">medium.com</a></p>
+<blockquote>
+<p><strong><em>lambda</em></strong> <em>functions always return something; hence</em> <strong><em>lambda</em></strong> <em>never gets</em> <code>void</code> as its return type, and the last execution will implicitly return the result.</p>
+</blockquote>
+<h1 id="heading-applications"><strong>Applications</strong></h1>
+<p>Before applying the <em>lambda</em> let’s just summarize: -</p>
+<ul>
+<li><p>defines an anonymous function,</p>
+</li>
+<li><p>implicitly <em>(no need for return lexeme)</em> returns the result of the last logic,</p>
+</li>
+<li><p>cannot span to multiple lines (if I am wrong, let me know in the comments or <a target="_blank" href="https://twitter.com/birnadin">dm</a> me).</p>
+</li>
+</ul>
+<p>I guess that’s it. Without ado let’s get started</p>
+<h2 id="heading-1-along-with-map"><strong>1. along with map</strong></h2>
+<p>I extensively use lambda in the <code>map</code> if the logic is simple or can be included in one line. Say, you have a list of strings of varying length, but you need to cut everything down to 120 words (maybe you are doing a Twitter clone with tkinder and python, I don't know 🤷‍♂️)</p>
+<pre><code class="lang-javascript">tweets = [...] # the initial tweets
+tweets = map(lambda t: t[:<span class="hljs-number">121</span>], tweets)
+</code></pre>
+<p>If it weren’t for <em>lambda</em>s, then that one-liner would be…</p>
+<pre><code class="lang-javascript">tweets = [...] # the initial tweets
+parsed_tweets = []
+<span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> tweets:
+  parsed_tweets.append(t[:<span class="hljs-number">121</span>])
+# now parsed_tweets is, parsed 😁
+</code></pre>
+<p>Which one do you prefer, I prefer the first one as it is more precise and requires less mental effort to comprehend.</p>
+<h2 id="heading-2-along-with-filter"><strong>2. along with filter</strong></h2>
+<p>Just like <code>map</code>, <em>lambda</em> is so useful when using <code>filter</code>. E.g., If you are to generate odd number series from 1 to <code>n</code>, <strong>in front of your crush</strong>, then with <em>lambda</em> you could just,</p>
+<pre><code class="lang-javascript">gen_odd = lambda n: [i <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> filter(lambda i: i%<span class="hljs-number">2</span>, range(<span class="hljs-number">1</span>,n+<span class="hljs-number">1</span>)]
+</code></pre>
+<p>without <em>lambda,</em> you would be mopping the floor like…</p>
+<pre><code class="lang-javascript">def gen_odd(n):
+  result = []
+  <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>,n+<span class="hljs-number">1</span>):
+    <span class="hljs-keyword">if</span> i % <span class="hljs-number">2</span> != <span class="hljs-number">0</span>:
+      result.append(i)
+  <span class="hljs-keyword">return</span> result
+</code></pre>
+<blockquote>
+<p><em>It is assumed that your crush is either a noob in python or a JavaScript developer.</em></p>
+</blockquote>
+<p>Of course, You could have done this,</p>
+<pre><code class="lang-javascript">result = [i <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>, n+<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)]
+</code></pre>
+<p>But where’s fun in that 😜, when she’s watching. Be careful not to mess up anything or you will be this meme.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:500/1*ADysSuGoXa1wJB6uJGBTlA.jpeg" alt="the infamous meme of Joe Biden falling before AirForce 1" /></p>
+<p>from <a target="_blank" href="http://imgflip.com">imgflip.com</a></p>
+<h2 id="heading-3-saving-some-characters-to-type"><strong>3. saving some characters to type</strong></h2>
+<p>Instead of spanning 2 lines of code to square a number or raise a number to power of something else, you can do it in one line with few whitespaces (assuming you can’t use <code>pow</code> std utility)</p>
+<pre><code class="lang-javascript">def pow_1(x,n):
+  <span class="hljs-keyword">return</span> x ** n
+
+pow_2 = lambda x,<span class="hljs-attr">n</span>: x ** n
+</code></pre>
+<p>You can see that <code>pow_2</code> is tidy and just to the point without any clutter or boilerplate code.</p>
+<h2 id="heading-4-in-resub"><strong>4. in re.sub()</strong></h2>
+<p>If you need to substitute some group of characters adhering to pattern iterating over more than 1 specimen, then <em>regex has</em> you covered. I especially used this to create <a target="_blank" href="https://medium.com/@birnadin/how-to-build-a-simple-template-engine-with-python-and-regex-ecb81d711ceb">my Template Engine</a>.</p>
+<h2 id="heading-how-to-build-a-simple-template-engine-with-python-and-regexhttpsmediumcombirnadinhow-to-build-a-simple-template-engine-with-python-and-regex-ecb81d711ceb"><a target="_blank" href="https://medium.com/@birnadin/how-to-build-a-simple-template-engine-with-python-and-regex-ecb81d711ceb">How to build a simple template engine with Python and regex</a></h2>
+<p>E.g.,</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> re
+specimen = <span class="hljs-string">"hello world"</span>
+pattern = r<span class="hljs-string">'\w+'</span>
+final_str = re.sub(pattern, <span class="hljs-string">'WORLD'</span>, specimen)
+</code></pre>
+<p>Wait, I just want to replace the last part, not just <code>world</code> to <code>WORLD</code> but any last word should be Upper! Well, <em>regex</em>’s <em>group</em> and <em>lambda</em> are to the rescue…</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> re
+pattern = r<span class="hljs-string">'(\w+)\s(\w+)'</span>
+final_str = re.sub(pattern, lambda m: m.group(<span class="hljs-number">1</span>) + <span class="hljs-string">' ,'</span> + m.group(<span class="hljs-number">2</span>).upper(), specimen)
+</code></pre>
+<p>Of course, many ways to do this, some of which might be better, but I couldn’t think of any as of writing this. If you think there are other ways with or without lambda but with lesser time complexity, please point them out in the comments, If not give this post a <strong>clap</strong>, wouldn’t cost you any 😍 and follow <a target="_blank" href="https://medium.com/@birnadin">me</a> 😘.</p>
+<h1 id="heading-epilogue"><strong>Epilogue</strong></h1>
+<p>Alright, that’s all I got for now, if I ever come across anything new about <em>lambda</em> I will put it in the comments or just update the post itself, so make sure you <strong>bookmark</strong> it or something. If you ever come across something awesome as well, please comment. Wouldn’t hurt or cost you to share the knowledge 🎊</p>
+<p>If you are intrigued and interested, go ahead and <strong>follow</strong> me on <a target="_blank" href="https://medium.com/@birnadin"><strong>Medium</strong></a> or on <a target="_blank" href="https://twitter.com/birnadin"><strong>Twitter</strong></a><strong>.</strong></p>
+<p>Till I see you next time, it’s <strong><em>me the BE,</em></strong> <em>signing off 👋.</em></p>
+</article> </main> 
